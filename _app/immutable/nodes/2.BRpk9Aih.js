@@ -1,0 +1,1 @@
+import"../chunks/NZTpNUN0.js";import"../chunks/DR9r6RPf.js";import{j as o,k as r,l as a}from"../chunks/Cq4Xyxph.js";var p=o('<h1>Test Repo for SvelteKit to Github Pages</h1> <p>Source code <a href="https://github.com/dustinfreeman/sveltekit2gh-pages">here</a></p>',1);function i(e){var t=p();a(2),r(e,t)}export{i as component};
