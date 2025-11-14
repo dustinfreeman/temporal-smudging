@@ -23,9 +23,10 @@
   const CW = 1920 * cSCALE;
   const CH = 1080 * cSCALE;
 
-  const defaultVideoSrc =
-    base + '/pm_examples/temporal-smudge-vids/' + 'WIN_20250614_19_54_33_Pro.mp4';
+  const exampleVideoFolder = base + '/example_videos/'
+  const defaultVideoSrc = exampleVideoFolder + 'WIN_20250614_19_54_33_Pro.mp4';
   // 'D-Photobooth-2025-06-10-17.44.mov';
+
   let videoSrc = $state(defaultVideoSrc);
   let fileinput: HTMLInputElement;
   function onVideoSelected(e: any) {
