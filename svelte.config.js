@@ -11,7 +11,7 @@ const config = {
     adapter: adapter(),
     paths: {
       // https://www.okupter.com/blog/deploy-sveltekit-website-to-github-pages
-      base: process.env.NODE_ENV === "production" ? "/sveltekit2gh-pages" : "",
+      base: process.env.NODE_ENV === "production" ? "/temporal-smudging" : "",
     },
   },
 };

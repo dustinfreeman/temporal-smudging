@@ -340,6 +340,10 @@
   <input type="checkbox" id="temporalOffsetCheck" bind:checked={temporalOffsetMode} />
 </div>
 
+<div>
+  Source code <a href="https://github.com/dustinfreeman/temporal-smudging">here</a>
+</div>
+
 <style>
   .ui_container {
     display: flex;
