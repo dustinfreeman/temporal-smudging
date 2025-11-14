@@ -19,6 +19,7 @@
   let canvi4OverlayShimmering: (HTMLCanvasElement | undefined)[] = $derived([co1, co2]);
 
   const cSCALE = 1 / 5;
+  //HACK: is this assumption broken?
   // const CW = 1620 * cSCALE;
   const CW = 1920 * cSCALE;
   const CH = 1080 * cSCALE;
@@ -227,7 +228,7 @@
 
 <div class="ui_container">
   <div class="video_column">
-    <!-- 1620 x 1080 -->
+    <!-- 1620 x 1080 HACK: double check -->
     <video
       src={videoSrc}
       class="video_embed"
@@ -357,16 +358,20 @@
   .video_box,
   .canvas,
   .video_embed {
-    width: 350px;
+    /* width: 350px; */
+    height: 200px;
   }
 
   .video_embed {
     overflow: clip;
+    /* TODO: uncomment to drop video controls below video so it doesn't overlap */
+    /* just assuming height of the controls here */
+    /* height:calc(200px + 100px); */
+    /* margin-top: -50px;  */
   }
 
   .video_box {
     overflow: clip;
-    height: 50%; /* gross, sorry */
     position: relative;
   }
   .canvas,
