@@ -227,6 +227,7 @@
 
 <div class="ui_container">
   <div class="video_column">
+    <div class="header_video_canvas">Video Source</div>
     <!-- 1620 x 1080 HACK: double check -->
     <video
       src={videoSrc}
@@ -246,6 +247,7 @@
         video.play();
       }}
     ></video>
+    <div class="header_video_canvas">Video Source sampled from smudged time</div>
     <div class="video_box">
       <canvas
         width={CW}
@@ -264,6 +266,7 @@
     </div>
   </div>
   <div class="video_column">
+    <div class="header_video_canvas">Time-per-pixel in Source</div>
     <canvas
       bind:this={canvas4SolidVideoTimeGray}
       width={CW}
@@ -275,6 +278,7 @@
         }
       }}
     ></canvas>
+    <div class="header_video_canvas">Here is where you Smudge Time</div>
     <div class="video_box" style="cursor:none;">
       <canvas
         class="canvas_w_overlay"
@@ -393,6 +397,10 @@
 
   .hidden_canvas {
     display: none;
+  }
+
+  .header_video_canvas {
+    text-decoration: underline;
   }
 
   .palette {
