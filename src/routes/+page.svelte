@@ -97,7 +97,7 @@
   let mousePos: Vec2 | undefined = $state(undefined);
   const onPaintingCanvasMouseMove = (e: any) => {
     let ctx = canvas4Painting.getContext('2d');
-    //TODO: something fucked up with the mouse coordinate system here, which I "fixed" with cursor:none;
+    //HACK: something fucked up with the mouse coordinate system here, which I "fixed" with cursor:none;
     mousePos = new Vec2(e.offsetX, e.offsetY);
     if (lastMousePos && ctx && e.buttons === 1) {
       const smudgeDelta = mousePos.subtract(lastMousePos);
