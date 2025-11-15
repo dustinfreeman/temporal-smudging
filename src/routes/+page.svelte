@@ -199,7 +199,7 @@
   let showShimmer = $state(true);
   let animInterval: NodeJS.Timeout;
   onMount(() => {
-    timeShimmer = new TimeShimmer(canvas4Painting, canvi4OverlayShimmering, 60);
+    timeShimmer = new TimeShimmer(canvas4Painting, canvi4OverlayShimmering, {width: 60});
     animInterval = setInterval(() => {
       timeShimmer.updateAndDraw(showShimmer);
       sampleFromCanvasAndVideoInTime(
@@ -215,7 +215,6 @@
   });
 
   function modeClick(mouseMode: MouseMode) {
-    // console.log('mode clicked', mouseMode);
     if (mouseMode === 'Load Video') {
       fileinput.click();
       return;
