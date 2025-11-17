@@ -18,14 +18,14 @@
   let co2: HTMLCanvasElement | undefined = $state(undefined);
   let canvi4OverlayShimmering: (HTMLCanvasElement | undefined)[] = $derived([co1, co2]);
 
-  const cSCALE = 1 / 5;
-  //HACK: is this assumption broken?
-  // const CW = 1620 * cSCALE;
-  const CW = 1920 * cSCALE;
+  const cSCALE = 1 / 4;
+  //TODO: don't require aspect ratio assumption broken?
+  const CW = 1620 * cSCALE; //macOS Photo Booth
+  // const CW = 1920 * cSCALE; //Windows webcam from Resistor installation
   const CH = 1080 * cSCALE;
 
   const exampleVideoFolder = base + '/example_videos/'
-  const defaultVideoSrc = exampleVideoFolder + 'WIN_20250614_19_54_33_Pro.mp4';
+  const defaultVideoSrc = exampleVideoFolder + 'Arteles-Pepper/Arteles-Pepper-2025-11-17-07.04.mov';
   // 'D-Photobooth-2025-06-10-17.44.mov';
 
   let videoSrc = $state(defaultVideoSrc);
@@ -228,7 +228,6 @@
 <div class="ui_container">
   <div class="video_column">
     <div class="header_video_canvas">Video Source</div>
-    <!-- 1620 x 1080 HACK: double check -->
     <video
       src={videoSrc}
       class="video_embed"
@@ -361,8 +360,7 @@
   .video_box,
   .canvas,
   .video_embed {
-    /* width: 350px; */
-    height: 200px;
+    height: 250px;
   }
 
   .video_embed {
