@@ -5,6 +5,7 @@
   import { sampleFromCanvasAndVideoInTime } from '$lib/frameTimeSampler';
   import TemporalSmudgeLogo from '$lib/TemporalSmudgeLogo.svelte';
   import { Vec2 } from '$lib/vec2';
+  import BrushCursor from '$lib/BrushCursor.svelte';
 
   const frameCache: ImageData[] = [];
   let videoCachingFinished = $state(false);
@@ -53,7 +54,7 @@
   ] as const;
   const MMMoji = ['💅', '🔎', '🌘', '🌔', '👅', '🗃️'];
   type MouseMode = (typeof MouseModes)[number];
-  let currentMouseMode: MouseMode = $state('Paint This');
+  let currentMouseMode: MouseMode = $state('Eyedropper');
 
   function makeGray(grayShade: number) {
     return `rgb(${grayShade}, ${grayShade}, ${grayShade})`;
@@ -95,7 +96,7 @@
   let currentPaintGray: number = $state(128);
   let lastMousePos: Vec2 | undefined;
   let mousePos: Vec2 | undefined = $state(undefined);
-  const onPaintingCanvasMouseMove = (e: any) => {
+  const onPaintingCanvasMouseAction = (e: any) => {
     let ctx = canvas4Painting.getContext('2d');
     //HACK: something fucked up with the mouse coordinate system here, which I "fixed" with cursor:none;
     mousePos = new Vec2(e.offsetX, e.offsetY);
@@ -274,6 +275,7 @@
       onclick={() => {
         if (currentMouseMode === 'Eyedropper') {
           currentPaintGray = videoPlaybackFrac * 255;
+          console.log('Eyedropper', videoPlaybackFrac, currentPaintGray);
         }
       }}
     ></canvas>
@@ -283,7 +285,8 @@
         class="canvas_w_overlay"
         width={CW}
         height={CH}
-        onmousemove={onPaintingCanvasMouseMove}
+        onmousemove={onPaintingCanvasMouseAction}
+        onmousedown={onPaintingCanvasMouseAction}
         onwheel={onPaintingCanvasMouseWheel}
         onmouseleave={() => {
           mousePos = undefined;
@@ -291,18 +294,7 @@
         bind:this={canvas4Painting}
       ></canvas>
       <canvas width={CW} height={CH} class="canvas_as_overlay" bind:this={co1}> </canvas>
-      <svg class="svg_parent" viewBox="0 0 {CW} {CH}" xmlns="http://www.w3.org/2000/svg">
-        {#if mousePos}
-          <circle
-            cx={mousePos.x}
-            cy={mousePos.y}
-            r={brushRadius}
-            stroke={'#00f6'}
-            stroke-width={CW * 0.009}
-            fill="#0000"
-          />
-        {/if}
-      </svg>
+      <BrushCursor centroid={mousePos} radius={brushRadius} {CW} {CH}/>
     </div>
   </div>
   <div class="video_column palette">
