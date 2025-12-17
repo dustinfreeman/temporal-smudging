@@ -28,8 +28,8 @@
 
   const exampleVideoFolder = base + '/example_videos/'
   const defaultVideoSrc = exampleVideoFolder + 
-      //'Arteles-Pepper/Arteles-Pepper-2025-11-17-07.04.mov';
-    'WIN_20250614_19_54_33_Pro.mp4';
+      'Arteles-Pepper/Arteles-Pepper-2025-11-17-07.04.mov';
+    // 'WIN_20250614_19_54_33_Pro.mp4';
 
   let videoSrc = $state(defaultVideoSrc);
   let fileinput: HTMLInputElement;
