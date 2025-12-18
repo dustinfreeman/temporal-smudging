@@ -5,6 +5,7 @@
   import { sampleFromCanvasAndVideoInTime } from '$lib/frameTimeSampler';
   import TemporalSmudgeLogo from '$lib/TemporalSmudgeLogo.svelte';
   import { Vec2 } from '$lib/vec2';
+  import BrushCursor from '$lib/BrushCursor.svelte';
 
   const frameCache: ImageData[] = [];
   let videoCachingFinished = $state(false);
@@ -18,15 +19,17 @@
   let co2: HTMLCanvasElement | undefined = $state(undefined);
   let canvi4OverlayShimmering: (HTMLCanvasElement | undefined)[] = $derived([co1, co2]);
 
-  const cSCALE = 1 / 5;
-  //HACK: is this assumption broken?
-  // const CW = 1620 * cSCALE;
-  const CW = 1920 * cSCALE;
+  const cSCALE = 1 / 4;
+  //TODO: don't require aspect ratio assumption broken?
+  // const CW = 1620 * cSCALE; //macOS Photo Booth
+  //HACK: these are video space coordinates
+  const CW = 1920 * cSCALE; //Windows webcam from Resistor installation
   const CH = 1080 * cSCALE;
 
   const exampleVideoFolder = base + '/example_videos/'
-  const defaultVideoSrc = exampleVideoFolder + 'WIN_20250614_19_54_33_Pro.mp4';
-  // 'D-Photobooth-2025-06-10-17.44.mov';
+  const defaultVideoSrc = exampleVideoFolder + 
+      'Arteles-Pepper/Arteles-Pepper-2025-11-17-07.04.mov';
+    // 'WIN_20250614_19_54_33_Pro.mp4';
 
   let videoSrc = $state(defaultVideoSrc);
   let fileinput: HTMLInputElement;
@@ -53,7 +56,7 @@
   ] as const;
   const MMMoji = ['💅', '🔎', '🌘', '🌔', '👅', '🗃️'];
   type MouseMode = (typeof MouseModes)[number];
-  let currentMouseMode: MouseMode = $state('Paint This');
+  let currentMouseMode: MouseMode = $state('Eyedropper');
 
   function makeGray(grayShade: number) {
     return `rgb(${grayShade}, ${grayShade}, ${grayShade})`;
@@ -91,23 +94,38 @@
     video?.requestVideoFrameCallback(drawOnVideoDupCanvas);
   };
 
-  let brushRadius = $state(30);
+  let brushRadius = $state(CW / 12);
   let currentPaintGray: number = $state(128);
-  let lastMousePos: Vec2 | undefined;
-  let mousePos: Vec2 | undefined = $state(undefined);
-  const onPaintingCanvasMouseMove = (e: any) => {
+  let mousePosDOM: Vec2 | undefined = $state(undefined);
+  let mousePosVideo: Vec2 | undefined = $state(undefined);
+  const onPaintingCanvasMouseAction = (e: any) => {
     let ctx = canvas4Painting.getContext('2d');
-    //HACK: something fucked up with the mouse coordinate system here, which I "fixed" with cursor:none;
-    mousePos = new Vec2(e.offsetX, e.offsetY);
-    if (lastMousePos && ctx && e.buttons === 1) {
-      const smudgeDelta = mousePos.subtract(lastMousePos);
-      let prevGrayLUT = ctx.getImageData(0, 0, CW, CH);
+    if (!ctx) {
+      return;
+    }
+    let prevGrayLUT = ctx.getImageData(0, 0, CW, CH);
+
+    const coordsDOM2Video = (p: Vec2) => {
+      const targetDOMRect = e.currentTarget.getBoundingClientRect() as DOMRect;
+      return new Vec2(
+        //using floor because these are precise pixel coordinates.
+        Math.floor(p.x / targetDOMRect.width * CW),
+        Math.floor(p.y / targetDOMRect.height * CH)
+      );
+    }
+
+    let lastMousePosDOM = mousePosDOM;
+    mousePosDOM = new Vec2(e.offsetX, e.offsetY);
+    let lastMousePosVideo = mousePosVideo;
+    mousePosVideo = coordsDOM2Video(mousePosDOM);
+    if (lastMousePosVideo && ctx && e.buttons === 1) {
+      const smudgeDelta = mousePosVideo.subtract(lastMousePosVideo);
       if (currentMouseMode === 'Paint This') {
         ctx.strokeStyle = '';
         ctx.fillStyle = makeGray(currentPaintGray);
         ctx.lineWidth = brushRadius;
         ctx.beginPath();
-        ctx.arc(mousePos.x, mousePos.y, brushRadius, 0, 2 * Math.PI);
+        ctx.arc(mousePosVideo.x, mousePosVideo.y, brushRadius, 0, 2 * Math.PI);
         ctx.fill();
       }
       if (['Darken', 'Lighten'].includes(currentMouseMode)) {
@@ -115,7 +133,7 @@
         for (let x = 0; x < CW; x++) {
           for (let y = 0; y < CH; y++) {
             const pt = new Vec2(x, y);
-            if (mousePos.subtract(pt).magnitude() < brushRadius) {
+            if (mousePosVideo.subtract(pt).magnitude() < brushRadius) {
               const p = 4 * (x + y * CW);
               for (let c = 0; c < 3; c++) {
                 prevGrayLUT.data[p + c] = Math.max(
@@ -142,7 +160,9 @@
         // ctx.fill();
       }
       if (currentMouseMode === 'Eyedropper') {
-        currentPaintGray = prevGrayLUT.data[4 * mousePos.x + mousePos.y * CW];
+        currentPaintGray = prevGrayLUT.data[4 * (mousePosVideo.x + mousePosVideo.y * CW)];
+        // console.log("Eyedrop at", 
+        // mousePosVideo.x + "," + mousePosVideo.y, "getting grey", currentPaintGray, "lut", prevGrayLUT);
       }
       if (currentMouseMode === 'Smudge') {
         const smudgeStrength = 0.3;
@@ -153,7 +173,7 @@
             const p = 4 * (x + y * CW);
             const pPreDelta = 4 * (x - smudgeDelta.x + (y - smudgeDelta.y) * CW);
             if (
-              mousePos.subtract(pt).magnitude() < brushRadius &&
+              mousePosVideo.subtract(pt).magnitude() < brushRadius &&
               0 <= pPreDelta &&
               pPreDelta <= 4 * CW * CH
             ) {
@@ -171,7 +191,8 @@
         ctx.putImageData(prevGrayLUT, 0, 0);
       }
     }
-    lastMousePos = mousePos;
+    lastMousePosDOM = mousePosDOM;
+    lastMousePosVideo = mousePosVideo;
   };
   function onPaintingCanvasMouseWheel(e: any) {
     brushRadius = Math.min(Math.max(1, brushRadius + e.deltaY * 0.02), 150);
@@ -228,7 +249,6 @@
 <div class="ui_container">
   <div class="video_column">
     <div class="header_video_canvas">Video Source</div>
-    <!-- 1620 x 1080 HACK: double check -->
     <video
       src={videoSrc}
       class="video_embed"
@@ -275,35 +295,26 @@
       onclick={() => {
         if (currentMouseMode === 'Eyedropper') {
           currentPaintGray = videoPlaybackFrac * 255;
+          console.log('Eyedropper', videoPlaybackFrac, currentPaintGray);
         }
       }}
     ></canvas>
     <div class="header_video_canvas">Here is where you Smudge Time</div>
-    <div class="video_box" style="cursor:none;">
+    <div class="video_box" style="cursor:crosshair;">
       <canvas
         class="canvas_w_overlay"
         width={CW}
         height={CH}
-        onmousemove={onPaintingCanvasMouseMove}
+        onmousemove={onPaintingCanvasMouseAction}
+        onmousedown={onPaintingCanvasMouseAction}
         onwheel={onPaintingCanvasMouseWheel}
         onmouseleave={() => {
-          mousePos = undefined;
+          mousePosDOM = undefined;
         }}
         bind:this={canvas4Painting}
       ></canvas>
       <canvas width={CW} height={CH} class="canvas_as_overlay" bind:this={co1}> </canvas>
-      <svg class="svg_parent" viewBox="0 0 {CW} {CH}" xmlns="http://www.w3.org/2000/svg">
-        {#if mousePos}
-          <circle
-            cx={mousePos.x}
-            cy={mousePos.y}
-            r={brushRadius}
-            stroke={'#00f6'}
-            stroke-width={CW * 0.009}
-            fill="#0000"
-          />
-        {/if}
-      </svg>
+      <BrushCursor centroid={mousePosVideo} radius={brushRadius} {CW} {CH}/>
     </div>
   </div>
   <div class="video_column palette">
@@ -361,7 +372,6 @@
   .video_box,
   .canvas,
   .video_embed {
-    /* width: 350px; */
     height: 200px;
   }
 
@@ -428,13 +438,4 @@
     border-radius: 3px;
   }
 
-  .svg_parent {
-    position: absolute; /*required to make z-index work?*/
-    z-index: 10;
-    pointer-events: none;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
 </style>
