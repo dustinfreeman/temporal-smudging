@@ -29,7 +29,8 @@
     
 <div>You now have a selected layer with feathered edges</div>
 
-<img class="wide" src="/example_videos/Arteles-Pepper/Screenshot 2025-12-17 at 19.13.44.png" />
+<!-- svelte-ignore a11y_missing_attribute -->
+<img class="wide" src={ base + "/example_videos/Arteles-Pepper/Screenshot 2025-12-17 at 19.13.44.png" }/>
 
 <style>
     .wide {
